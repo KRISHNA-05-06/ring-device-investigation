@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadValidatedPreview",
+      "Effect": "Allow",
+      "Action": "lambda:InvokeFunction",
+      "Resource": "arn:aws:lambda:us-east-1:455646290306:function:ring-device-query"
+    },
+    {
+      "Sid": "ReadAndStoreHouseholdProposals",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject"],
+      "Resource": "arn:aws:s3:::ring-device-investigation-455646290306-us-east-1/recovery/proposals/household-001/*"
+    }
+  ]
+}

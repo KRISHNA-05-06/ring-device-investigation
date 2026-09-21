@@ -1,0 +1,2 @@
+{"event_id":"evt-001","household_id":"household-001","device_id":"doorbell-001","event_time":"2026-09-01T10:15:00Z","battery_percent":85}
+{"event_id":"evt-002","household_id":"household-001","device_id":"camera-001","event_time":"2026-09-01T09:50:00Z","battery_percent":60}

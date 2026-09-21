@@ -1,0 +1,69 @@
+Project ring_device_investigation {
+  database_type: 'PostgreSQL'
+  Note: 'Current four-table schema. Recovery workflow migrations are still pending.'
+}
+
+Table devices {
+  household_id text [not null, note: 'PK part; required. Household scope of the registered device. There is no separate households table.']
+  device_id text [not null, note: 'PK part; required. Device identifier, unique within one household.']
+  device_type text [not null, note: 'Required. Allowed values: doorbell or camera.']
+  registered_at timestamptz [not null, note: 'Required. Registration time. The validator rejects an event earlier than this time.']
+  indexes {
+    (household_id, device_id) [pk]
+  }
+}
+
+Table ingestion_runs {
+  run_id text [pk, not null, note: 'PK; required. Identifier for one processing attempt. Current format: Lambda request ID plus object index.']
+  household_id text [not null, note: 'Required; composite UQ. Household configured for this ingestion attempt. Paired with run_id for the heartbeat foreign key.']
+  source_bucket text [not null, note: 'Required. S3 bucket containing the original input object.']
+  source_key text [not null, note: 'Required. Full S3 object key, such as raw/mixed-events.json. A key alone does not preserve an overwritten object.']
+  status text [not null, note: 'Required; default \'running\'. running, completed, or failed. Completed may include rejected records; it means processing finished.']
+  started_at timestamptz [not null, note: 'Required; default now. Time the attempt started. Used to order recent runs and investigate stale runs.']
+  completed_at timestamptz [note: 'Nullable. Completion or failure time. Must be absent while running and present after completion or failure.']
+  input_count integer [not null, note: 'Required; default 0. Number of nonblank input records accounted for by a completed run.']
+  accepted_count integer [not null, note: 'Required; default 0. New valid heartbeat rows inserted by this run.']
+  duplicate_count integer [not null, note: 'Required; default 0. Repeated events with the same household, event ID, and normalized content. No new heartbeat row is added.']
+  rejected_count integer [not null, note: 'Required; default 0. Records rejected by validation or conflicting event content.']
+  error_message text [note: 'Nullable. Run-level failure information. The current validator stores the exception class, not a full secret-bearing traceback.']
+  indexes {
+    (run_id, household_id) [unique]
+    (household_id, started_at) [name: 'ingestion_household_time_idx']
+  }
+}
+
+Table heartbeat_events {
+  household_id text [not null, note: 'PK part; FK part; required. Scope for the event. Both the registered device and ingestion run must match this household.']
+  event_id text [not null, note: 'PK part; required. Event identifier within a household. Reuse with different content is a conflict.']
+  device_id text [not null, note: 'FK part; required. Registered device that sent this heartbeat.']
+  event_time timestamptz [not null, note: 'Required. Time the event happened, not the time it arrived. Used to find the latest heartbeat at a chosen cutoff.']
+  battery_percent integer [not null, note: 'Required; 0 through 100. Reported battery level. Boolean and non-integer inputs are rejected by the validator.']
+  digest text [not null, note: 'Required; 64 lowercase hex. SHA-256 fingerprint of normalized event content. Distinguishes an identical repeat from changed content; it is not encryption.']
+  run_id text [not null, note: 'FK part; required. Run that first inserted this event. Duplicate deliveries do not replace this reference.']
+  line_number integer [not null, note: 'Required; greater than 0. Original one-based line number in the source object.']
+  received_at timestamptz [not null, note: 'Required; default now. Time the database recorded the accepted event. PostgreSQL CURRENT_TIMESTAMP uses the transaction start time.']
+  indexes {
+    (household_id, event_id) [pk]
+    (household_id, device_id, event_time, event_id) [name: 'heartbeat_device_time_idx']
+    run_id [name: 'heartbeat_run_idx']
+  }
+}
+
+Table rejected_records {
+  rejection_id bigint [pk, not null, increment, note: 'PK; generated identity. Database-generated identifier for one rejected record.']
+  run_id text [not null, note: 'FK; required; UQ part. Processing attempt that rejected this record. Obtain household scope by joining this run.']
+  line_number integer [not null, note: 'Required; UQ part; > 0. Original one-based source line. A run can store one rejection per line.']
+  error_code text [not null, note: 'Required; nonblank. Machine-readable reason, such as UNKNOWN_DEVICE or EVENT_ID_CONFLICT.']
+  error_message text [not null, note: 'Required. Readable explanation of the rejection.']
+  raw_record text [not null, note: 'Required. Original line text, including malformed JSON. TEXT permits evidence that JSON storage would reject.']
+  created_at timestamptz [not null, note: 'Required; default now. Time the rejection row was recorded. Uses PostgreSQL transaction time by default.']
+  indexes {
+    (run_id, line_number) [unique]
+  }
+}
+
+Ref device_heartbeats: heartbeat_events.(household_id, device_id) > devices.(household_id, device_id)
+Ref run_heartbeats: heartbeat_events.(run_id, household_id) > ingestion_runs.(run_id, household_id)
+Ref run_rejections: rejected_records.run_id > ingestion_runs.run_id
+
+// schema.sql is authoritative for defaults, CHECK constraints, and descending index order.

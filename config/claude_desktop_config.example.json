@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "ring-aws": {
+      "command": "C:\\path\\to\\ring-device-investigation\\.venv-aws\\Scripts\\python.exe",
+      "args": ["C:\\path\\to\\ring-device-investigation\\aws_mcp_server.py"],
+      "env": {"RING_AWS_PROFILE": "ring-mcp"}
+    }
+  }
+}

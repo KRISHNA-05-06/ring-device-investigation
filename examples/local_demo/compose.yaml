@@ -1,0 +1,18 @@
+name: ring-device-investigation
+services:
+  demo:
+    build: .
+    image: ring-device-investigation:0.1.0
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+  tests:
+    image: ring-device-investigation:0.1.0
+    profiles: [test]
+    network_mode: none
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    command: [python, -m, unittest, -v, test_project]

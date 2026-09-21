@@ -1,0 +1,20 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "FindHouseholdApprovalEvidence",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::ring-device-investigation-455646290306-us-east-1",
+      "Condition": {
+        "StringLike": {"s3:prefix": "recovery/approvals/household-001/*"}
+      }
+    },
+    {
+      "Sid": "ReadHouseholdApprovalEvidence",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::ring-device-investigation-455646290306-us-east-1/recovery/approvals/household-001/*"
+    }
+  ]
+}

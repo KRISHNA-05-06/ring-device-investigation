@@ -1,0 +1,4 @@
+{"event_id":"evt-003","household_id":"household-001","device_id":"doorbell-001","event_time":"2026-09-01T10:20:00Z","battery_percent":80}
+{"event_id":"evt-004","household_id":"household-001","device_id":"camera-001","event_time":"2026-09-01T10:21:00Z","battery_percent":150}
+this is not valid JSON
+{"event_id":"evt-005","household_id":"household-001","device_id":"camera-001","event_time":"2026-09-01T10:22:00Z","battery_percent":65}

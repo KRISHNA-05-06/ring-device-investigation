@@ -1,0 +1,11 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublishDemoBatchesToRingEvents",
+      "Effect": "Allow",
+      "Action": "kinesis:PutRecords",
+      "Resource": "arn:aws:kinesis:us-east-1:455646290306:stream/ring-events"
+    }
+  ]
+}

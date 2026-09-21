@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadHouseholdProposals",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::ring-device-investigation-455646290306-us-east-1/recovery/proposals/household-001/*"
+    },
+    {
+      "Sid": "ReadAndSaveHouseholdApprovals",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject"],
+      "Resource": "arn:aws:s3:::ring-device-investigation-455646290306-us-east-1/recovery/approvals/household-001/*"
+    }
+  ]
+}

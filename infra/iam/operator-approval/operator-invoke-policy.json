@@ -1,0 +1,35 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "InvokeAuthenticatedApprovalUrl",
+      "Effect": "Allow",
+      "Action": "lambda:InvokeFunctionUrl",
+      "Resource": "arn:aws:lambda:us-east-1:455646290306:function:ring-device-approval",
+      "Condition": {
+        "StringEquals": {"lambda:FunctionUrlAuthType": "AWS_IAM"}
+      }
+    },
+    {
+      "Sid": "InvokeApprovalOnlyThroughUrl",
+      "Effect": "Allow",
+      "Action": "lambda:InvokeFunction",
+      "Resource": "arn:aws:lambda:us-east-1:455646290306:function:ring-device-approval",
+      "Condition": {
+        "Bool": {"lambda:InvokedViaFunctionUrl": "true"}
+      }
+    },
+    {
+      "Sid": "DenyDirectApprovalInvocation",
+      "Effect": "Deny",
+      "Action": "lambda:InvokeFunction",
+      "Resource": [
+        "arn:aws:lambda:us-east-1:455646290306:function:ring-device-approval",
+        "arn:aws:lambda:us-east-1:455646290306:function:ring-device-approval:*"
+      ],
+      "Condition": {
+        "BoolIfExists": {"lambda:InvokedViaFunctionUrl": "false"}
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ring-device-investigation": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "--network=none", "--read-only", "--cap-drop=ALL", "--security-opt=no-new-privileges", "ring-device-investigation:0.1.0", "python", "server.py"]
+    }
+  }
+}
