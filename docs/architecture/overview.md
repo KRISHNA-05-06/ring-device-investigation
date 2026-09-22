@@ -35,4 +35,4 @@ Recovery sequence: inspect -> correction preview -> persisted proposal -> replay
 
 Tradeoffs: S3 preserves input and makes recovery inspectable, but adds latency and many small objects. PostgreSQL offers constraints and joins, but requires connections and VPC operations. Several Lambdas simplify permission boundaries but add deployment steps. Exactly-once event transport is not claimed; stable IDs, digests, database uniqueness and fixed conditional S3 keys make specific retries safe. S3 exports and PostgreSQL are not one atomic transaction.
 
-Current source locations are mapped in docs/interview/guide.md. Older aws/query_lambda.py and PDF trackers are historical, not the latest deployment reference.
+Service implementations are under `services/`. The database schema and verification queries are under `infra/database/`; AWS packaging requirements are documented in [the deployment guide](../runbooks/deployment.md).

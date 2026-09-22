@@ -1,10 +1,6 @@
 # AWS database schema
 
-Evidence through 18 September 2026 (UTC)
-
-Exactly four PostgreSQL tables. The source is the schema supplied during the build and the successful database tests; it is not a fresh catalog export. Confirm deployed definitions with `\d+ public.table_name` if you have changed them.
-
-Use `aws/schema.sql` for full constraints and `aws/schema.dbml` in dbdiagram.io. The root `schema.sql` is the separate SQLite prototype and remains unchanged.
+The PostgreSQL schema contains four tables. See [schema.sql](../../infra/database/schema.sql) for constraints and indexes, or [schema.dbml](../../infra/database/schema.dbml) for a diagram definition. Confirm deployed definitions with `\d+ public.table_name` when checking for schema drift.
 
 ## Relationships
 
@@ -85,7 +81,7 @@ One row per rejected line in a processing attempt. Preserves bad input and the r
 - A repeated rejected record may create a new rejection in a later run. UNIQUE(run_id, line_number) prevents duplication only within the same run.
 - Valid late events remain in history. Health queries select by event_time, with event_id as the deterministic equal-time tie breaker.
 - Current indexes support device-time lookup, heartbeat-to-run lookup, and recent runs per household.
-- Future approval and recovery fields are not part of this current schema. Design them as migrations within these four tables before implementing writes.
+- Proposals, approvals, correction artifacts, and saved reports are stored in S3. They do not add tables to this schema.
 
 ## Verified examples
 

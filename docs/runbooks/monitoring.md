@@ -1,6 +1,6 @@
 # Operational monitoring
 
-Prepared 2026-09-21. Five offline guardrail tests passed. User-supplied CloudShell output confirms successful deployment and matching configurations for all ten alarms. The validator's deliberate NoSuchKey failure produced Errors=1 at 20:34 UTC and a metric-driven OK -> ALARM transition at 20:36:31.840 UTC. This verifies that one detection path, not fault coverage of all ten alarms. SQL also confirms this exact failed run has a completion timestamp and all counters and accepted/rejection row counts are zero.
+CloudWatch monitors Lambda failures, throttling, stream processing delay, and failure-destination delivery. The deployment tool manages a dedicated CloudFormation stack and verifies its alarm configurations. The failure exercise below checks that a real validator exception produces a metric-driven alarm transition.
 
 ## What is added
 
@@ -65,7 +65,7 @@ aws cloudwatch describe-alarm-history \
 
 Save the invocation response and the history entry whose time matches this test. In ring-db-shell query ingestion_runs for the printed source key and confirm failed/NoSuchKey, zero counts and zero accepted/rejected rows. Do not use SetAlarmState as proof of metric-driven detection. Do not rerun a failure just because the console is delayed. This verifies one alarm path, not every threshold or downstream incident response.
 
-## Incident checklist
+## Incident response
 
 1. Identify the alarm, metric dimensions, UTC interval and whether a deliberate test caused it.
 2. Open that function's CloudWatch log group (normally /aws/lambda/<function>) and correlate the request ID with the ingestion run or recovery receipt. Custom log groups, if configured, appear in inspect output.

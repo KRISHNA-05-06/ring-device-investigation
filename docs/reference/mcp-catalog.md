@@ -1,18 +1,16 @@
 # MCP tool catalog
 
-Reconciled 2026-09-21 against the local AWS MCP server and shared AWS/Claude evidence.
-The server advertises 17 tools: the original 15 plus preview_record_correction and get_daily_device_metrics.
-All are implemented; historical live evidence exists across the user-run Lambda, Python MCP and Claude checks.
-The final current-session read-only smoke passed on 2026-09-21: discovery, resources, prompt and three live read calls. It did not re-execute every tool or repeat recovery.
+The local MCP server exposes 17 tools over stdio. Queries read household-scoped evidence;
+recovery tools preview or persist specific artifacts. Approval is handled by a separate operator interface.
 
-| Build order | Tool | Effect | Purpose |
+| # | Tool | Effect | Purpose |
 | --- | --- | --- | --- |
 | 1 | `get_device_health` | Read | Latest accepted heartbeat and age-based classification for registered devices. |
 | 2 | `get_pipeline_status` | Read | Ingestion attempts, recent runs and counters; totals are not unique-device counts. |
 | 3 | `get_rejection_summary` | Read | Recorded rejection occurrences grouped by error code. |
 | 4 | `list_rejected_records` | Read | Bounded rejection details, optional error-code filter, explicit truncation. |
 | 5 | `inspect_rejected_record` | Read | Original rejected content, validation reason and source evidence. |
-| 6 | `preview_record_correction` | Preview / extra | Construct a proposed battery correction; no persistence or approval. |
+| 6 | `preview_record_correction` | Preview | Construct a proposed battery correction; no persistence or approval. |
 | 7 | `propose_record_correction` | Write | Persist an exact pending proposal, bound to source and content digests. |
 | 8 | `get_operation_status` | Read | Combine proposal, approval, correction, submission and observed ingestion evidence. |
 | 9 | `get_audit_history` | Read | Recorded artifact lifecycle; not a complete log of every request. |
@@ -23,7 +21,7 @@ The final current-session read-only smoke passed on 2026-09-21: discovery, resou
 | 14 | `get_event_history` | Read | Accepted events in a bounded, start-inclusive/end-exclusive time window. |
 | 15 | `get_quality_results` | Read | Four consistency checks over selected completed ingestion runs. |
 | 16 | `recompute_device_health` | Write | Save a health observation in S3; identical retries reuse the original report. |
-| 17 | `get_daily_device_metrics` | Read / extra | UTC daily counts and battery statistics; zero events preserve null readings. |
+| 17 | `get_daily_device_metrics` | Read | UTC daily counts and battery statistics; zero events preserve null readings. |
 
 ## Resources and prompts
 

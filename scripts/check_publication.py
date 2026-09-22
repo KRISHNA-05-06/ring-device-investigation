@@ -17,6 +17,8 @@ FORBIDDEN = {'local-only', '.aws', '.venv-aws', '__pycache__', 'sessions', 'node
 def main():
     output = subprocess.check_output(['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard'], cwd=ROOT)
     files = sorted(set(name for name in output.decode('utf-8').split('\0') if name))
+    # Tracked deletions remain in the index until staged; inspect only present files.
+    files = [name for name in files if (ROOT / name).is_file()]
     problems = []
     for name in files:
         path = Path(name)

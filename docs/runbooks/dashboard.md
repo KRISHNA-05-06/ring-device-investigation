@@ -1,6 +1,6 @@
 # Local investigation dashboard
 
-First version: read-only device health, all-attempt ingestion totals, rejection summaries, daily metrics, and the latest 20 ingestion runs. It uses existing query operations through the shared aws_mcp_server.py adapter. It does NOT use the MCP protocol to render the browser: Claude uses MCP, whereas this Python dashboard reuses the same adapter and AWS query service. No new table, public endpoint, Lambda deployment or AWS permissions should be needed for the existing ring-mcp identity.
+The dashboard displays device health, ingestion totals, rejection summaries, daily metrics, and the latest 20 ingestion runs. Its Python server invokes the Query Lambda through the shared AWS adapter. Claude uses the MCP protocol; the dashboard calls the adapter directly. All dashboard operations are read-only.
 
 ## Start from the project PowerShell directory
 
@@ -35,4 +35,4 @@ Sidebar navigation smoothly scrolls to Overview, Daily metrics or the actual ing
 
 Loopback controls are demo safeguards, not a production multi-user authentication system. Do not expose this server through a public tunnel. Production hosting needs an authenticated web service, appropriate identity/household authorization, rate limits and an application server.
 
-Correction, approval and replay remain in the existing MCP plus independent operator workflow. This first dashboard does not yet show recovery detail or embed a model. Those can be added as read-only views if needed; no write buttons are implemented.
+Correction and replay use the MCP recovery tools, with approval handled by the independent operator client. The dashboard has no write operations or embedded model.

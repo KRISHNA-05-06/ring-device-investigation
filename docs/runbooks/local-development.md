@@ -1,26 +1,48 @@
 # Local development
 
-Run commands from the repository root. Existing `.venv-aws` and AWS profiles remain on your laptop.
+Use Python 3.11 and run commands from the repository root. Install `requirements.txt` in a
+virtual environment before starting the clients or tests.
 
 ```powershell
+python -m venv .venv-aws
+.\.venv-aws\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv-aws\Scripts\python.exe scripts/test_offline.py
 .\.venv-aws\Scripts\python.exe apps/dashboard/dashboard.py --demo
+```
+
+The test runner uses mocked AWS services and real local MCP protocol sessions. Dashboard demo
+mode serves labeled sample data. To preview producer events without sending them:
+
+```powershell
 .\.venv-aws\Scripts\python.exe tools/simulator/stream_simulator.py
 ```
 
-These run offline checks, serve labelled UI fixtures, and preview a producer session respectively.
-For AWS, renew the `ring-mcp` login and run `tests/integration/test_aws_mcp_readiness.py`, or start
-the dashboard without `--demo`. Simulator `--send` writes events using `ring-dev` and stops after
-three minutes by default. Each dashboard refresh performs four reads.
+On macOS/Linux, use `.venv-aws/bin/python` instead.
 
-Claude can keep pointing at root `aws_mcp_server.py`; its implementation is now under `services/mcp/`.
-Root `approval_client.py` is also preserved. Old root test commands remain as ignored local launchers;
-fresh clones should use `tests/integration/` and `tests/protocol/`.
+## AWS clients
 
-Set `RING_APPROVAL_URL` for the operator client, or put an `approval_url` property in
-`local-only/config/operator.json`. The existing endpoint was migrated there. Credentials still come
-from the AWS profile. A new clone deliberately has no configured live approval endpoint.
+Configure `ring-mcp` for query/recovery, `ring-dev` for event production, and `ring-operator` for
+approvals. Verify the identity behind each profile. Profile names alone do not enforce separation;
+the operator and MCP client must authenticate as different, appropriately restricted principals.
 
-Use the new canonical paths when editing. Historical drafts and learning PDFs are under `local-only/`;
-they are not runtime dependencies. Existing convenience commands in the old dashboard and simulator
-folders forward to the canonical implementations.
+For a configured deployment, run `tests/integration/test_aws_mcp_readiness.py` or start the dashboard
+without `--demo`. Renew expired credentials before retrying. Each dashboard refresh performs four
+read operations. Simulator `--send` writes events and stops after three minutes by default.
+
+## Claude configuration
+
+Use `config/claude_desktop_config.example.json` as a template. Set absolute paths to the virtual
+environment's Python executable and root `aws_mcp_server.py`. The launcher loads the implementation
+in `services/mcp/`. Restart the Claude desktop application after changing its configuration.
+
+## Operator configuration
+
+Set `RING_APPROVAL_URL`, or put an `approval_url` property in the ignored
+`local-only/config/operator.json`. Credentials come from the operator's AWS profile. The repository
+does not include a live approval URL. The root `approval_client.py` loads `tools/operator/approval_client.py`.
+
+## Code and tests
+
+Edit implementations under `services/`, `apps/`, `tools/`, and `infra/`. Test suites live under
+`tests/unit/`, `tests/protocol/`, and `tests/integration/`. Live integration checks are separate from
+the offline runner; inspect their requirements and write behavior before running them.

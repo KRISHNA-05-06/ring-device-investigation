@@ -1,6 +1,6 @@
 # Security boundaries and publication
 
-This is a single-household learning prototype using synthetic events. It is not an official Ring
+This is a single-household application using synthetic events. It is not an official Ring
 integration or a production service. MCP annotations describe tools; backend validation and IAM
 enforce access. Approval requires a separate operator identity. Secrets must never be supplied by
 the host model or committed to Git.

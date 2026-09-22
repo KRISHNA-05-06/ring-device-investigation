@@ -1,6 +1,6 @@
 # Bounded streaming simulator
 
-This is a separate producer for synthetic events in the existing ring-events stream. It is not connected to Ring devices or the Ring app. The original CloudShell producer was not available in the local workspace, so this file implements its own small, tested sender rather than modifying that remote script.
+The simulator sends synthetic heartbeat events to the ring-events Kinesis stream. It supports normal traffic, silence, invalid battery values, and duplicate delivery. It is not connected to physical devices.
 
 ## First run from the project PowerShell directory
 
@@ -40,7 +40,7 @@ AWS reference: https://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRe
 
 All live scenarios add database history and S3 objects. They may change latest-health and current-day reports; older September 17/18 fixtures remain unchanged only if newly generated event timestamps are outside those days. Nothing is automatically deleted when the producer stops. This is a local foreground demo, not an always-on cloud service.
 
-## Functions to understand
+## Implementation
 
 - make_events: constructs five-field events and applies the selected scenario.
 - wire_record: serializes the event and supplies its Kinesis partition key.
@@ -51,7 +51,7 @@ All live scenarios add database history and S3 objects. They may change latest-h
 
 Keep the session ID printed in send mode (preview uses a different ID). In ring-db-shell as ring_reader, paste verify_session.sql after replacing PASTE_SEND_SESSION_ID. Run again if ingestion is still catching up, without restarting the producer. For a normal uninterrupted six-batch session expect 18 accepted event rows, six per device. If fewer batches were completed, compare with the producer's batch receipts. SQL accepted counts alone cannot diagnose whether a missing event is in transit, rejected, or unsent: correlate source/sequence receipts and ingestion evidence before concluding failure.
 
-Local tests mock AWS; no live stream has been started by the assistant.
+Unit tests mock AWS. Sending events and verifying their ingestion require a configured AWS deployment.
 
 ## Short invalid-data demonstration
 
@@ -65,8 +65,14 @@ This generates exactly one planned batch: camera-001 battery 74, camera-002 batt
 
 In the live dashboard select Current time, refresh after ingestion, and inspect the rejection summary and recent runs. INVALID_BATTERY should increase from its pre-test count by at least one. Pipeline counters include attempts and may exceed the three unique inputs if delivery repeats. A completed validator run may contain a rejected record; invalid data is different from the missing-source infrastructure test that marked the run failed. camera-002 retains its prior accepted heartbeat and battery value; rejecting this new event does not erase earlier accepted history.
 
-## Initial live access denial (details)
+## Troubleshooting access denied
 
-The user's first send session 05d93e11da6a4568bb179c156328f6a6 authenticated as ring-project-developer but its first PutRecords call returned AccessDeniedException, with zero completed batches. The previous sender labeled all whole-call errors unconfirmed; it now distinguishes explicit access denial as send_denied and includes AWS's error message. Timeouts and other uncertain errors retain the conservative unconfirmed status.
+The producer requires `kinesis:PutRecords` on the configured stream. `PutRecord` is a different
+permission. Review `infra/iam/stream-simulator/RingSimulatorStreamWrite.json` and the producer's
+AWS identity when a send returns `AccessDeniedException`. Keep producer permissions separate
+from the MCP client and Lambda execution roles.
 
-Using an existing IAM-administration session, add the inline policy RingSimulatorStreamWrite.json to the IAM user ring-project-developer, named RingSimulatorStreamWrite, if that scoped grant is missing. Keep existing policies. This grants only kinesis:PutRecords on the one project stream; PutRecord is a different action. Do not attach this to ring-mcp-client or the Lambda execution roles. This policy is prepared locally, not applied by the assistant. If access is still denied, inspect the full AWS error now logged: an explicit deny, permissions boundary, session restriction or KMS denial needs specific diagnosis rather than a broader grant.
+The sender records explicit access denial as `send_denied`. Timeouts and other ambiguous failures
+remain unconfirmed; inspect receipts before sending again. An explicit deny, permissions boundary,
+session restriction, or KMS error requires investigating that specific policy rather than adding
+broad access.

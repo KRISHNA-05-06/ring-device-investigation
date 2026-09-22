@@ -1,8 +1,8 @@
 # Deployment boundaries
 
-Reorganizing the repository does not change deployed AWS resources. There is no automatic AWS
-deployment on Git push. This repository captures available source and the tested monitoring stack;
-it is not a complete infrastructure-as-code recreation of the AWS account.
+AWS deployment is separate from Git commits and pushes. This repository contains service source,
+database definitions, IAM policies, and monitoring deployment tooling. It does not include complete
+infrastructure provisioning or the archive Lambda source.
 
 | Component | Canonical source | Requirements |
 |---|---|---|
